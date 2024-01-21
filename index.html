@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Management</title>
+    <!-- Add Bootstrap CSS link -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
+</head>
+<body class="container mt-4">
+
+    <form class="mb-3">
+        <div class="mb-3">
+            <label for="book_name" class="form-label">Name:</label>
+            <input id="book_name" type="text" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label for="author" class="form-label">Author:</label>
+            <input id="author" type="text" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label for="year" class="form-label">Publication Year:</label>
+            <input id="year" type="number" class="form-control">
+        </div>
+        <button type="button" onclick="add_book()" class="btn btn-primary">Submit</button>
+    </form>
+
+    <ul id="books_lst" class="list-group">
+
+    </ul>
+
+    <script>
+        const MY_SERVER = "http://127.0.0.1:8000/books/"
+
+        const get_books = async () => {
+            books_list = await axios.get(MY_SERVER)
+
+            books_list = books_list.data
+            console.log(books_list);
+
+            books_list.forEach(book => {
+                const card = document.createElement('li')
+                card.className = "list-group-item";
+                card.innerHTML = `
+                <strong>Name:</strong> ${book.name} <br>
+                <strong>Author:</strong> ${book.author} <br>
+                <strong>Publication Year:</strong> ${book.pub_year}<br>
+                <strong>Added at:</strong> ${book.added_date}<br>
+                <button onclick=del_book(${book.id}) class="btn btn-danger btn-sm">Delete</button>
+                <button onclick=upd_book(${book.id}) class="btn btn-warning btn-sm">Update</button>
+                `
+                document.getElementById("books_lst").appendChild(card)
+            })
+        }
+
+        const del_book = (bookID) => {
+            axios.delete(`${MY_SERVER}${bookID}`)
+                .then(() => {
+                    // Update the list after deletion
+                    document.getElementById("books_lst").innerHTML = "";
+                    get_books();
+                })
+        }
+
+        const upd_book = (bookID) => {
+            const data = {
+                "name": document.getElementById("book_name").value,
+                "author": document.getElementById("author").value,
+                "pub_year": document.getElementById("year").value
+            }
+
+            axios.put(`${MY_SERVER}${bookID}`, data)
+                .then(() => {
+                    // Update the list after updating
+                    document.getElementById("books_lst").innerHTML = "";
+                    get_books();
+                })
+        }
+
+        const add_book = () => {
+            const data = {
+                "name": document.getElementById("book_name").value,
+                "author": document.getElementById("author").value,
+                "pub_year": document.getElementById("year").value
+            }
+
+            axios.post(MY_SERVER, data)
+                .then(() => {
+                    // Update the list after adding
+                    document.getElementById("books_lst").innerHTML = "";
+                    get_books();
+                })
+        }
+
+        get_books()
+    </script>
+
+    <!-- Add Bootstrap JS and Popper.js (required for Bootstrap JS) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
